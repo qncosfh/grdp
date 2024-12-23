@@ -54,12 +54,6 @@ import (
  *
  */
 
-const (
-	ChannelName   = plugin.CLIPRDR_SVC_CHANNEL_NAME
-	ChannelOption = plugin.CHANNEL_OPTION_INITIALIZED | plugin.CHANNEL_OPTION_ENCRYPT_RDP |
-		plugin.CHANNEL_OPTION_COMPRESS_RDP | plugin.CHANNEL_OPTION_SHOW_PROTOCOL
-)
-
 type MsgType uint16
 
 const (
@@ -89,6 +83,10 @@ type DwFlags uint32
 const (
 	FILECONTENTS_SIZE  = 0x00000001
 	FILECONTENTS_RANGE = 0x00000002
+)
+
+const (
+	CLIPRDR_SVC_CHANNEL_NAME = "cliprdr"
 )
 
 type CliprdrPDUHeader struct {
@@ -339,7 +337,8 @@ func (c *CliprdrClient) Sender(f core.ChannelSender) {
 	c.w = f
 }
 func (c *CliprdrClient) GetType() (string, uint32) {
-	return ChannelName, ChannelOption
+	return CLIPRDR_SVC_CHANNEL_NAME, plugin.CHANNEL_OPTION_INITIALIZED | plugin.CHANNEL_OPTION_ENCRYPT_RDP |
+		plugin.CHANNEL_OPTION_COMPRESS_RDP | plugin.CHANNEL_OPTION_SHOW_PROTOCOL
 }
 
 func (c *CliprdrClient) Process(s []byte) {
