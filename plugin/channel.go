@@ -165,21 +165,19 @@ typedef UINT VCAPITYPE VIRTUALCHANNELWRITEEX(LPVOID pInitHandle, DWORD openHandl
 typedef VIRTUALCHANNELWRITEEX* PVIRTUALCHANNELWRITEEX;
 */
 
-//static channel name
+// static channel name
 const (
 	CLIPRDR_SVC_CHANNEL_NAME = "cliprdr" //剪切板
-	RDPDR_SVC_CHANNEL_NAME   = "rdpdr"   //设备重定向(打印机，磁盘，端口，智能卡等)
+	RDPDR_SVC_CHANNEL_NAME   = "rdpdr"   //打印
 	RDPSND_SVC_CHANNEL_NAME  = "rdpsnd"  //音频输出
 	RAIL_SVC_CHANNEL_NAME    = "rail"    //远程应用
-	DRDYNVC_SVC_CHANNEL_NAME = "drdynvc" //动态虚拟通道
+	ENCOMSP_SVC_CHANNEL_NAME = "encomsp" //多方虚拟通道
 	REMDESK_SVC_CHANNEL_NAME = "remdesk" //远程协助
+	RDP2TCP_DVC_CHANNEL_NAME = "rdp2tcp"
+	DRDYNVC_SVC_CHANNEL_NAME = "drdynvc"
 )
 
-const (
-	RDPGFX_DVC_CHANNEL_NAME = "Microsoft::Windows::RDS::Graphics" //图形扩展
-)
-
-var StaticVirtualChannels = map[string]int{
+var StaticVirtualChannels = map[string]int64{
 	CLIPRDR_SVC_CHANNEL_NAME: CHANNEL_OPTION_INITIALIZED | CHANNEL_OPTION_ENCRYPT_RDP |
 		CHANNEL_OPTION_COMPRESS_RDP | CHANNEL_OPTION_SHOW_PROTOCOL,
 	RDPDR_SVC_CHANNEL_NAME: CHANNEL_OPTION_INITIALIZED | CHANNEL_OPTION_ENCRYPT_RDP | CHANNEL_OPTION_COMPRESS_RDP,
@@ -277,11 +275,6 @@ func (c *Channels) SendToChannel(channel string, s []byte) (int, error) {
 }
 
 func (c *Channels) process(channel string, s []byte) {
-	cli, ok := c.channels[channel]
-	if !ok {
-		glog.Warn("No found channel:", channel)
-		return
-	}
 	r := bytes.NewReader(s)
 	ln, _ := core.ReadUInt32LE(r)
 	flags, _ := core.ReadUInt32LE(r)
@@ -299,6 +292,10 @@ func (c *Channels) process(channel string, s []byte) {
 	} else {
 		s, _ = core.ReadBytes(r.Len(), r)
 	}
-
+	cli, ok := c.channels[channel]
+	if !ok {
+		glog.Warn("No found channel:", channel)
+		return
+	}
 	cli.t.Process(s)
 }
